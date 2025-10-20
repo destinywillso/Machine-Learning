@@ -9,6 +9,7 @@ from torch.utils.data import Dataset
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from collections import defaultdict
 
 DATA_DIR = "/srv/data/lt2326-h25/a1"
 IMAGES_DIR = os.path.join(DATA_DIR, "images")
@@ -23,12 +24,26 @@ else:
     print("info.json not found at", INFO_JSON)
 
 annotations_by_image = {}
+filtered_data = []
+
 with open(TRAIN_JSONL, "r", encoding="utf-8") as f:
     for line in tqdm(f, desc="Reading train.jsonl"):
         item = json.loads(line)
-        image_id = item.get("image_id")  # 通常像 "0000189"
-        annotations_by_image[image_id] = item
-print("Total annotated images loaded:", len(annotations_by_image))
+        image_id = item.get("image_id")  # 或 "id"，看你的 JSON
+        image_path = os.path.join(IMAGES_DIR, f"{image_id}.jpg")
+        if os.path.exists(image_path):
+            filtered_data.append(item)
+        else:
+            print(f"Warning: Missing image {image_id}.jpg, skipping.")
+
+# 重建 annotations_by_image
+annotations_by_image = defaultdict(lambda: {"annotations": []})
+for item in filtered_data:
+    image_id = item.get("image_id")
+    for ann in item.get("annotations", []):
+        annotations_by_image[image_id]["annotations"].append(ann)
+
+print("Total images after filtering:", len(annotations_by_image))
 
 def load_image_and_mask(image_id):
     image_path = os.path.join(IMAGES_DIR, f"{image_id}.jpg")
@@ -39,8 +54,8 @@ def load_image_and_mask(image_id):
     mask = np.zeros((height, width), dtype=np.uint8)
 
     for ann in annotations_by_image[image_id]["annotations"]:
-        x, y, w, h = map(int, ann["bbox"])
-        mask[y:y+h, x:x+w] = 1  # 标记为文字区域
+        x, y, w, h = map(int, ann[0]["adjusted_bbox"]) 
+        mask[y:y+h, x:x+w] = 1  
 
     return img, mask
 
