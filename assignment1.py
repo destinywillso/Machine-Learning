@@ -11,10 +11,9 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from collections import defaultdict
 
-DATA_DIR = "/srv/data/lt2326-h25/a1"
-IMAGES_DIR = os.path.join(DATA_DIR, "images")
-TRAIN_JSONL = os.path.join(DATA_DIR, "train.jsonl")
-INFO_JSON = os.path.join(DATA_DIR, "info.json")
+IMAGES_DIR = "images_trainvl"
+TRAIN_JSONL = "train.jsonl"
+INFO_JSON = "info.json"
 
 if os.path.exists(INFO_JSON):
     with open(INFO_JSON, "r", encoding="utf-8") as f:
