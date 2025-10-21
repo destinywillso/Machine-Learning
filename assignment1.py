@@ -28,14 +28,13 @@ filtered_data = []
 with open(TRAIN_JSONL, "r", encoding="utf-8") as f:
     for line in tqdm(f, desc="Reading train.jsonl"):
         item = json.loads(line)
-        image_id = item.get("image_id")  # 或 "id"，看你的 JSON
+        image_id = item.get("image_id") 
         image_path = os.path.join(IMAGES_DIR, f"{image_id}.jpg")
         if os.path.exists(image_path):
             filtered_data.append(item)
         else:
             print(f"Warning: Missing image {image_id}.jpg, skipping.")
 
-# 重建 annotations_by_image
 annotations_by_image = defaultdict(lambda: {"annotations": []})
 for item in filtered_data:
     image_id = item.get("image_id")
@@ -184,10 +183,10 @@ val_loader = DataLoader(val_dataset, batch_size=4)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = SimpleCNN().to(device)
 
-criterion = nn.BCELoss()  # 二分类像素级损失
+criterion = nn.BCELoss()  
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-num_epochs = 5  # 先少训练试运行
+num_epochs = 10  
 
 for epoch in range(num_epochs):
     model.train()
@@ -230,7 +229,7 @@ unet_model = UNet().to(device)
 optimizer_unet = torch.optim.Adam(unet_model.parameters(), lr=1e-3)
 criterion = nn.BCELoss()
 
-num_epochs = 5
+num_epochs = 20
 
 for epoch in range(num_epochs):
     unet_model.train()
